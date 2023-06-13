@@ -4,18 +4,21 @@ pygame.init()
 import random
 
 class Snake:
-  def __init__(self, window_size, block_size, head_color, body_color):
+  def __init__(self, window_size, block_size, head_color, body_color, eye_color):
     self.window_size = window_size
     self.block_size = block_size
     self.head_color = head_color
     self.body_color = body_color
+    self.eye_color = eye_color
     self.body = [(window_size[0] // 2, window_size[1] // 2), (window_size[0] // 2 - block_size, window_size[1] // 2)]
     self.length = 2
+    self.direction = 'right'
     self.dx = block_size
     self.dy = 0
   
-  def change_direction(self, dx, dy):
+  def change_direction(self, direction, dx, dy):
     if dx != -self.dx and dy != -self.dy:
+      self.direction = direction
       self.dx = dx
       self.dy = dy
   
@@ -52,22 +55,37 @@ class Screen:
   def draw_snake(self, snake):
     for i, part in enumerate(snake.body):
       rect = pygame.Rect(part[0], part[1], self.block_size, self.block_size)
+      # Draw head
       if i == 0:
         pygame.draw.rect(self.display, snake.head_color, rect)
+        # Draw eyes
+        if snake.direction == 'left':
+          pygame.draw.circle(self.display, snake.eye_color, (part[0] + self.block_size // 8, part[1] + self.block_size // 4), self.block_size // 16)
+          pygame.draw.circle(self.display, snake.eye_color, (part[0] + self.block_size // 8, part[1] + self.block_size // 4 * 3), self.block_size // 16)
+        elif snake.direction == 'right':
+          pygame.draw.circle(self.display, snake.eye_color, (part[0] + self.block_size - (self.block_size // 8), part[1] + self.block_size // 4), self.block_size // 16)
+          pygame.draw.circle(self.display, snake.eye_color, (part[0] + self.block_size - (self.block_size // 8), part[1] + self.block_size // 4 * 3), self.block_size // 16)
+        elif snake.direction == 'up':
+          pygame.draw.circle(self.display, snake.eye_color, (part[0] + self.block_size // 4, part[1] + self.block_size // 8), self.block_size // 16)
+          pygame.draw.circle(self.display, snake.eye_color, (part[0] + self.block_size // 4 * 3, part[1] + self.block_size // 8), self.block_size // 16)
+        elif snake.direction == 'down':
+          pygame.draw.circle(self.display, snake.eye_color, (part[0] + self.block_size // 4, part[1] + self.block_size - (self.block_size // 8)), self.block_size // 16)
+          pygame.draw.circle(self.display, snake.eye_color, (part[0] + self.block_size // 4 * 3, part[1] + self.block_size - (self.block_size // 8)), self.block_size // 16)
+      # Draw body
       else:
         pygame.draw.rect(self.display, snake.body_color, rect)
   
   def draw_food(self, food):
     rect = pygame.Rect(food.pos[0], food.pos[1], self.block_size, self.block_size)
     pygame.draw.rect(self.display, food.color, rect)
-
+    
 class Game:
   # Colors
   BLACK = pygame.Color(0, 0, 0)
   WHITE = pygame.Color(255, 255, 255)
-  RED = pygame.Color(255, 0, 0)
-  LIGHT_GREEN = pygame.Color(0, 240, 0)
-  DARK_GREEN = pygame.Color(0, 100, 0)
+  RED = pygame.Color(235, 0, 0)
+  LIGHT_GREEN = pygame.Color(0, 220, 0)
+  DARK_GREEN = pygame.Color(0, 160, 0)
   BLUE = pygame.Color(0, 0, 255)
   def __init__(self, window_size, block_size):
     assert window_size[0] % block_size == 0, "Window width must be a multiple of block size."
@@ -76,7 +94,7 @@ class Game:
     self.block_size = block_size
     self.screen = Screen(window_size, block_size, self.BLACK, self.WHITE)
     self.clock = pygame.time.Clock()
-    self.snake = Snake(window_size, block_size, self.LIGHT_GREEN, self.DARK_GREEN)
+    self.snake = Snake(window_size, block_size, self.LIGHT_GREEN, self.DARK_GREEN, self.BLACK)
     self.running = True
     self.block_pos = [(x, y) for x in range(0, window_size[0], block_size) for y in range(0, window_size[1], block_size)]
     self.food = Food(random.choice([pos for pos in self.block_pos if pos not in self.snake.body]), self.RED)
@@ -91,16 +109,16 @@ class Game:
         if event.type == pygame.KEYDOWN:
           if not changed_direction:
             if event.key == pygame.K_LEFT:
-              self.snake.change_direction(-self.block_size, 0)
+              self.snake.change_direction('left', -self.block_size, 0)
               changed_direction = True
             elif event.key == pygame.K_RIGHT:
-              self.snake.change_direction(self.block_size, 0)
+              self.snake.change_direction('right', self.block_size, 0)
               changed_direction = True
             elif event.key == pygame.K_UP:
-              self.snake.change_direction(0, -self.block_size)
+              self.snake.change_direction('up', 0, -self.block_size)
               changed_direction = True
             elif event.key == pygame.K_DOWN:
-              self.snake.change_direction(0, self.block_size)
+              self.snake.change_direction('down', 0, self.block_size)
               changed_direction = True
       
       # Move
@@ -131,6 +149,6 @@ class Game:
 
 if __name__ == "__main__":
   # Game settings
-  WINDOW_SIZE = (400, 400)
-  BLOCK_SIZE = 40
+  WINDOW_SIZE = (1600, 800)
+  BLOCK_SIZE = 80
   Game(WINDOW_SIZE, BLOCK_SIZE)
