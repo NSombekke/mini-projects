@@ -149,6 +149,6 @@ class Game:
 
 if __name__ == "__main__":
   # Game settings
-  WINDOW_SIZE = (1600, 800)
-  BLOCK_SIZE = 80
+  WINDOW_SIZE = (512, 512)
+  BLOCK_SIZE = 32
   Game(WINDOW_SIZE, BLOCK_SIZE)
